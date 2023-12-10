@@ -33,6 +33,8 @@ function Home() {
                 setPrompt(inputValue)
                 setResult(data.data.choices[0].text)
                 setJresult(JSON.stringify(data.data, null, 2))
+                setInputValue("")
+                setError("")
             } else {
                 throw new Error("An error ocurred")
             }
