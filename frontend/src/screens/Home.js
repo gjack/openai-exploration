@@ -1,4 +1,5 @@
 import React, {useState} from "react"
+import "./styles/style.css"
 
 function Home() {
     const [inputValue, setInputValue] = useState("")
@@ -25,7 +26,9 @@ function Home() {
                 <label htmlFor="floatingInput">Input</label>
             </div>
             </div>
-            <div className="col-sm-2"></div>
+            <div className="col-sm-2">
+              <div className="btn btn-primary custom-button" type="submit">Submit</div>
+            </div>
         </div>
         </form>
         {error && <div className="alert alert-danger mt-3">{error}</div>}
