@@ -4,13 +4,11 @@ import Home from "./screens/Home";
 
 function App(params) {
     return (
-        <>
-          <Router>
-            <Routes>
-                <Route path="/" element={Home}></Route>
-            </Routes>
-          </Router>
-        </>
+      <Router>
+        <Routes>
+          <Route path="/" Component={Home}></Route>
+        </Routes>
+      </Router>
     )
 }
 
