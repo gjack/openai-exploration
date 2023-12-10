@@ -22,7 +22,8 @@ const openai = new OpenAI({
 async function runCompletion(prompt) {
     const response = await openai.completions.create({
         prompt: prompt,
-        model: 'text-davinci-003'
+        model: 'text-davinci-003',
+        max_tokens: 50
     }).asResponse()
 
     return await response.json()
