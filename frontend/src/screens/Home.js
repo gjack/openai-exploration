@@ -8,7 +8,38 @@ function Home() {
     const [prompt, setPrompt] = useState("")
     const [jresult, setJresult] = useState("")
 
-    const handleSubmit = (event) => { }
+    const handleSubmit = async (event) => {
+        event.preventDefault()
+
+        if (!inputValue) {
+            setError("Please, enter a value for prompt.")
+            setPrompt("")
+            setResult("")
+            setJresult("")
+            return
+        }
+
+        try {
+            const response = await fetch("/api/chatgpt", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({text: inputValue})
+            })
+
+            if (response.ok) {
+                const data = await response.json()
+                console.log(data)
+            } else {
+                throw new Error("An error ocurred")
+            }
+        } catch (error) {
+            console.log(error)
+            setResult("")
+            setError("An error ocurred while submitting the form.")
+        }
+     }
 
     return (
     <div className="container">
@@ -27,7 +58,7 @@ function Home() {
             </div>
             </div>
             <div className="col-sm-2">
-              <div className="btn btn-primary custom-button" type="submit">Submit</div>
+              <button className="btn btn-primary custom-button" type="submit">Submit</button>
             </div>
         </div>
         </form>
