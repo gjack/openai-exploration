@@ -1,10 +1,7 @@
 const express = require("express")
 const dotenv = require("dotenv")
 const app = express()
-const cors = require("cors")
 
-// bypass cors limitations
-app.options("/api/chatgpt", cors())
 // accept json data in requests
 app.use(express.json())
 
@@ -29,7 +26,7 @@ async function runCompletion(prompt) {
     return await response.json()
 }
 
-app.post("/api/chatgpt", cors(), async function(req, resp) {
+app.post("/api/chatgpt", async function(req, resp) {
     try {
       const {text} = req.body
 
