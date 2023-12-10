@@ -30,7 +30,9 @@ function Home() {
 
             if (response.ok) {
                 const data = await response.json()
-                console.log(data)
+                setPrompt(inputValue)
+                setResult(data.data.choices[0].text)
+                setJresult(JSON.stringify(data.data, null, 2))
             } else {
                 throw new Error("An error ocurred")
             }

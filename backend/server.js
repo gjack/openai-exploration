@@ -25,7 +25,7 @@ async function runCompletion(prompt) {
         model: 'text-davinci-003'
     }).asResponse()
 
-    return { data: await response.json() }
+    return await response.json()
 }
 
 app.post("/api/chatgpt", cors(), async function(req, resp) {
