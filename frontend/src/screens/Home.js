@@ -23,9 +23,9 @@ function Home() {
             const response = await fetch("/api/chatgpt", {
                 method: "POST",
                 headers: {
-                    "Content-Type": "application/json"
+                    'Content-Type': 'application/json',
                 },
-                body: JSON.stringify({text: inputValue})
+                body: JSON.stringify({ text: inputValue })
             })
 
             if (response.ok) {
