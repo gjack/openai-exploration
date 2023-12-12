@@ -86,6 +86,27 @@ app.post("/api/chatgpt_stream", async function(req, resp) {
     }
 })
 
+app.post("/api/pdfsummary", async function(req, resp) {
+    try {
+      const {text} = req.body
+
+      const completion = await runCompletion(text)
+      resp.json({ data: completion, ok: true })
+    } catch (error) {
+        if (error.response) {
+            console.error(error.response.status, error.response.data)
+            resp.status(error.response.status).json(error.response.data)
+        } else {
+            console.error("Error with OPENAI request:", error.message)
+            resp.status(500).json({
+                error: {
+                    message: "An error ocurred during the request"
+                }
+            })
+        }
+    }
+})
+
 const PORT = process.env.PORT
 
 app.listen(PORT, console.log(`Server started on port ${PORT}`))
