@@ -106,6 +106,12 @@ app.post("/api/pdfsummary", upload.single('pdf'), async function(req, resp) {
       }
       const data = await extractor.extract(pdfFile.path, extractOptions)
       const pdfText = data.pages.map(page => page.content.map(item => item.str).join("")).join(" ")
+      
+      // handle documents that have text only inside images and can't be parsed
+      if (pdfText.length === 0) {
+        resp.json({ error: "Could not extract text from this pdf document. Please try again with a different one."})
+        return
+      }
 
       resp.json({pdfText})
 
