@@ -103,14 +103,14 @@ const splitSentence = (sentence, maxTokenSize = 2000) => {
     const sentenceChunks = []
     let partialChunk = ""
 
-    const words = sentence.split(/\s+/)
+    const words = sentence.split(/\s/)
 
     for (const word of words) {
         if (calculateTokens(partialChunk + word) < maxTokenSize) {
            partialChunk += word + " " // we lose the space between words when we split them
         } else {
-           sentenceChunks.push(partialChunk.trim())
-           partialChunk = word
+           sentenceChunks.push(partialChunk)
+           partialChunk = word + " "
         }
     }
     if(partialChunk) {
@@ -132,15 +132,15 @@ function splitTextIntoChunks(text, maxTokenSize = 2000) {
       if (calculateTokens(currentChunk + sentence) < maxTokenSize) {
          currentChunk += sentence + " " // we lose the space between sentences when we split
       } else if (calculateTokens(sentence) < maxTokenSize) {
-        chunks.push(currentChunk.trim()) // trim any lingering space
-        currentChunk = sentence
+        chunks.push(currentChunk)
+        currentChunk = sentence + " "
       } else {
         // push the currentChunk intto the array and split the sentence and push those chunks too
-        chunks.push(currentChunk.trim())
+        chunks.push(currentChunk)
         const sentenceChunks = splitSentence(sentence, maxTokenSize)
         chunks.push(...sentenceChunks)
         // reset the currentChunk to an empty string
-        currentChunk = ""
+        currentChunk = " "
       }
     }
 
@@ -172,7 +172,7 @@ app.post("/api/pdfsummary", upload.single('pdf'), async function(req, resp) {
         return
       }
 
-      resp.json({pdfText})
+      resp.json({ chunks: splitTextIntoChunks(pdfText, 2000) })
 
     } catch (error) {
       console.error("An error occurred")
