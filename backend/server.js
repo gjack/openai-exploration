@@ -39,6 +39,7 @@ async function startCompletionStream(prompt) {
     return stream
 }
 
+
 app.post("/api/chatgpt", async function(req, resp) {
     try {
       const {text} = req.body
@@ -90,6 +91,66 @@ const multer = require('multer')
 const path = require("path")
 const { PDFExtract } = require('pdf.js-extract')
 const upload = multer({ dest: path.join(__dirname, 'pdfsummaryfiles')})
+const { encode } = require("gpt-3-encoder")
+
+// calculate tokens
+
+const calculateTokens = text => encode(text).length
+
+// split large sentence into chunks
+
+const splitSentence = (sentence) => {
+    const maxTokenSize = 2000  // maximum amount of tokens we want to have for each chunk of text
+    const sentenceChunks = []
+    let partialChunk = ""
+
+    const words = sentence.split(/\s+/)
+
+    for (const word of words) {
+        if (calculateTokens(partialChunk + word) < maxTokenSize) {
+           partialChunk += word + " " // we lose the space between words when we split them
+        } else {
+           sentenceChunks.push(partialChunk.trim())
+           partialChunk = word
+        }
+    }
+    if(partialChunk) {
+      sentenceChunks.push(partialChunk)
+    }
+    return sentenceChunks
+ }
+
+// split text into chunks
+
+function splitTextIntoChunks(text) {
+    const maxTokenSize = 2000  // maximum amount of tokens we want to have for each chunk of text
+    const chunks = []
+    let currentChunk = ""
+
+    // Break down in sentences. In the English language, a sentence can be considered to begin with a capital letter
+    // and end with a period, exclamation mark or question mark, followed by some empty space
+    const sentences = text.replace(/([.?!])\s*(?=[A-Z])/g, "$1|").split("|")
+    for (const sentence of sentences) {
+      if (calculateTokens(currentChunk + sentence) < maxTokenSize) {
+         currentChunk += sentence + " " // we lose the space between sentences when we split
+      } else if (calculateTokens(sentence) < maxTokenSize) {
+        chunks.push(currentChunk.trim()) // trim any lingering space
+        currentChunk = sentence
+      } else {
+        // push the currentChunk intto the array and split the sentence and push those chunks too
+        chunks.push(currentChunk.trim())
+        const sentenceChunks = splitSentence(sentence)
+        chunks.push(...sentenceChunks)
+        // reset the currentChunk to an empty string
+        currentChunk = ""
+      }
+    }
+
+    if (currentChunk) {
+      chunks.push(currentChunk)
+    }
+    return chunks
+ }
 
 app.post("/api/pdfsummary", upload.single('pdf'), async function(req, resp) {
     try {
