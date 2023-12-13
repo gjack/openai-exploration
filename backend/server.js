@@ -99,8 +99,7 @@ const calculateTokens = text => encode(text).length
 
 // split large sentence into chunks
 
-const splitSentence = (sentence) => {
-    const maxTokenSize = 2000  // maximum amount of tokens we want to have for each chunk of text
+const splitSentence = (sentence, maxTokenSize = 2000) => {
     const sentenceChunks = []
     let partialChunk = ""
 
@@ -122,8 +121,7 @@ const splitSentence = (sentence) => {
 
 // split text into chunks
 
-function splitTextIntoChunks(text) {
-    const maxTokenSize = 2000  // maximum amount of tokens we want to have for each chunk of text
+function splitTextIntoChunks(text, maxTokenSize = 2000) {
     const chunks = []
     let currentChunk = ""
 
@@ -139,7 +137,7 @@ function splitTextIntoChunks(text) {
       } else {
         // push the currentChunk intto the array and split the sentence and push those chunks too
         chunks.push(currentChunk.trim())
-        const sentenceChunks = splitSentence(sentence)
+        const sentenceChunks = splitSentence(sentence, maxTokenSize)
         chunks.push(...sentenceChunks)
         // reset the currentChunk to an empty string
         currentChunk = ""
