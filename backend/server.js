@@ -105,8 +105,9 @@ app.post("/api/pdfsummary", upload.single('pdf'), async function(req, resp) {
         disableCombinedTextItems: false
       }
       const data = await extractor.extract(pdfFile.path, extractOptions)
+      const pdfText = data.pages.map(page => page.content.map(item => item.str).join("")).join(" ")
 
-      resp.json({data})
+      resp.json({pdfText})
 
     } catch (error) {
       console.error("An error occurred")
