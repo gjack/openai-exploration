@@ -32,17 +32,14 @@ function PdfSummary() {
                     'Content-Type': 'multipart/form-data',
                 }
             })
-            console.log(response.data)
 
-            // if (response.ok) {
-            //     const data = await response.json()
-            //     setResult(data.data.choices[0].text)
-            //     setJresult(JSON.stringify(data.data, null, 2))
-            //     setInputValue("")
-            //     setError("")
-            // } else {
-            //     throw new Error("An error ocurred")
-            // }
+            if (response.data.error) {
+                setError(response.data.error)
+                return
+            }
+
+            setError("")
+            setJresult(JSON.stringify(response.data, null, 2))
         } catch (error) {
             console.log(error)
             setResult("")
@@ -81,7 +78,7 @@ function PdfSummary() {
         </div>
         {error && <div className="alert alert-danger mt-3">{error}</div>}
         {result && <div className="alert alert-success mt-3">{result}</div>}
-        {result && (<pre className="alert alert-info mt-3"><code>{jresult}</code></pre>)}
+        {jresult && (<pre className="alert alert-info mt-3"><code>{jresult}</code></pre>)}
     </div>
     )
     
