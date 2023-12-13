@@ -3,7 +3,6 @@ import "../styles/style.css"
 import axios from "axios"
 
 function PdfSummary() {
-    const [inputValue, setInputValue] = useState("")
     const [error, setError] = useState("")
     const [result, setResult] = useState("")
     const [jresult, setJresult] = useState("")
@@ -48,6 +47,8 @@ function PdfSummary() {
             console.log(error)
             setResult("")
             setError("An error ocurred while submitting the form.")
+        } finally {
+            setLoading(false)
         }
      }
 
