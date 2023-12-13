@@ -1,5 +1,6 @@
 import React, {useState} from "react"
 import "../styles/style.css"
+import axios from "axios"
 
 function PdfSummary() {
     const [inputValue, setInputValue] = useState("")
@@ -12,32 +13,37 @@ function PdfSummary() {
 
     const handleSubmit = async (event) => {
         event.preventDefault()
+        setLoading(true)
 
-        if (!inputValue) {
-            setError("Please, enter a value for prompt.")
+        if (!maxWordsNumber) {
+            setError("Please, enter a number of words")
             setResult("")
             setJresult("")
             return
         }
 
         try {
-            const response = await fetch("/api/pdfsummary", {
-                method: "POST",
+            const formData = new FormData()
+            formData.append('pdf', selectedFile)
+            formData.append('maxWordsNumber', maxWordsNumber)
+            
+            // fetch is not that great for submitting form-data so we use axios instead
+            const response = await axios.post("/api/pdfsummary", formData, {
                 headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({ text: inputValue })
+                    'Content-Type': 'multipart/form-data',
+                }
             })
+            console.log(response.data)
 
-            if (response.ok) {
-                const data = await response.json()
-                setResult(data.data.choices[0].text)
-                setJresult(JSON.stringify(data.data, null, 2))
-                setInputValue("")
-                setError("")
-            } else {
-                throw new Error("An error ocurred")
-            }
+            // if (response.ok) {
+            //     const data = await response.json()
+            //     setResult(data.data.choices[0].text)
+            //     setJresult(JSON.stringify(data.data, null, 2))
+            //     setInputValue("")
+            //     setError("")
+            // } else {
+            //     throw new Error("An error ocurred")
+            // }
         } catch (error) {
             console.log(error)
             setResult("")
@@ -45,8 +51,9 @@ function PdfSummary() {
         }
      }
 
-    const handleFileChange = () => {
-
+    const handleFileChange = (e) => {
+      const file = e.target.files[0]
+      setSelectedFile(file)
     }
 
     return (
@@ -54,7 +61,7 @@ function PdfSummary() {
         <div className=" hero d-flex align-items-center justify-content-center text-center flex-column p-3">
             <h1 className="display-4">PDF Summaries</h1>
             <p className="lead">Summarize PDF documents for efficient reading!</p>
-            <form className="w-100">
+            <form className="w-100" onSubmit={handleSubmit}>
                 <input type="file" accept=".pdf" onChange={handleFileChange}></input>
                 <div className="form-group row">
                   <div className="col-sm-4 offset-sm-4 mt-3">

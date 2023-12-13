@@ -86,24 +86,31 @@ app.post("/api/chatgpt_stream", async function(req, resp) {
     }
 })
 
-app.post("/api/pdfsummary", async function(req, resp) {
-    try {
-      const {text} = req.body
+const multer = require('multer')
+const path = require("path")
+const { PDFExtract } = require('pdf.js-extract')
+const upload = multer({ dest: path.join(__dirname, 'pdfsummaryfiles')})
 
-      const completion = await runCompletion(text)
-      resp.json({ data: completion, ok: true })
+app.post("/api/pdfsummary", upload.single('pdf'), async function(req, resp) {
+    try {
+      const { maxWordsNumber } = req.body
+      const pdfFile = req.file
+      const extractor = new PDFExtract()
+      const extractOptions = {
+        firstPage: 1,
+        lastPage: undefined, // we extract all the pages
+        password: "", // these are not password protected
+        verbosity: -1, // no logs
+        normalizeWhitespace: false,
+        disableCombinedTextItems: false
+      }
+      const data = await extractor.extract(pdfFile.path, extractOptions)
+
+      resp.json({data})
+
     } catch (error) {
-        if (error.response) {
-            console.error(error.response.status, error.response.data)
-            resp.status(error.response.status).json(error.response.data)
-        } else {
-            console.error("Error with OPENAI request:", error.message)
-            resp.status(500).json({
-                error: {
-                    message: "An error ocurred during the request"
-                }
-            })
-        }
+      console.error("An error occurred")
+      resp.status(500).json({ error })
     }
 })
 
