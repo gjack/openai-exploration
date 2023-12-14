@@ -20,3 +20,7 @@
  Heading to `http://localhost:3000/stream` will show you a demo of streamed completions using the same `text-davinci-003` model. These two demos have a `max_token` value of 50, so keep your prompts short or increase the value or `max_tokens`. 😄 
  
  Heading over to `http://localhost:3000/pdfsummary` will show a demo of pdf summarization using the `gpt-3.5-turbo` model. This model is a bit more generous with the amount of maximum tokens allowed, but all models rate limit heavily, unless you're in a paid plan, so try to keep it to short PDFs of one or two pages maximum. Note that you will have to create a folder called `pdfsummaryfiles` inside the `backend` directory. This is where the uploads will be saved.
+
+ More information about rate limits in the free tier can be found [here](https://platform.openai.com/docs/guides/rate-limits?context=tier-free).
+
+ This project uses the [openai](https://github.com/openai/openai-node) node library. 
