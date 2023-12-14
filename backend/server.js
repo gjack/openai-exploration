@@ -150,6 +150,59 @@ function splitTextIntoChunks(text, maxTokenSize = 2000) {
     return chunks
  }
 
+ const summariseChunk = async (chunk, maxWordsNumber) => {
+   const condition = maxWordsNumber ? ` in about ${maxWordsNumber} words` : ""
+
+   try {
+     const response = await openai.chat.completions.create({
+      messages: [{ role: 'user', content: `Please summarise the following text${condition}:\n"""${chunk}"""\n\nSummary:`}],
+      model: 'gpt-3.5-turbo',
+      max_tokens: 3000
+    })
+
+     return response.choices[0].message.content
+   } catch (error) {
+     console.log("Error while summarising chunk:", error)
+     throw(error) // re throw the error so it can be handled by the caller
+   }
+ }
+
+ const summariseChunks = async (chunks) => {
+   // openai rate limits heavily on free plan and will return an error if you make too many requests per minute
+   // some models allow for more requests
+   const delay = mseconds => new Promise(resolve => setTimeout(resolve, mseconds))
+   // Summarise each of the chunks of text and then combine them
+   const summarised = await Promise.all(chunks.map(async chunk => {
+     // play with the delay and max_tokens according to the model you use
+     // large pdf documents may still error out due to rate limits
+     const result = await delay(2000).then(() => summariseChunk(chunk))
+     return result
+   }))
+
+   return summarised.join(" ")
+ }
+
+//**************** JUST FOR TESTING CHUNKING */
+
+async function trysumarize() {
+  const chunk = "Contrary to popular belief, Lorem Ipsum is not simply random text. It has roots in a piece of classical Latin literature from 45 BC, making it over 2000 years old."
+
+  const summary = await summariseChunk(chunk)
+  console.log(summary)
+}
+
+
+async function trysummariseChunks() {
+  const chunks = ["Contrary to popular belief, Lorem Ipsum is not simply random text. It has roots in a piece of classical Latin literature from 45 BC, making it over 2000 years old.",
+  "Richard McClintock, a Latin professor at Hampden-Sydney College in Virginia, looked up one of the more obscure Latin words, consectetur, from a Lorem Ipsum passage, and going through the cites of the word in classical literature, discovered the undoubtable source.",
+  ]
+  const summary = await summariseChunks(chunks)
+  console.log(summary)
+}
+
+// trysummariseChunks()
+//** END OF TESTING */
+
 app.post("/api/pdfsummary", upload.single('pdf'), async function(req, resp) {
     try {
       const { maxWordsNumber } = req.body
@@ -172,7 +225,15 @@ app.post("/api/pdfsummary", upload.single('pdf'), async function(req, resp) {
         return
       }
 
-      resp.json({ chunks: splitTextIntoChunks(pdfText, 2000) })
+      let summarisedText = pdfText
+      const maxTokens = 2000
+      while (calculateTokens(summarisedText) > maxTokens) {
+        let newChunks = splitTextIntoChunks(summarisedText, maxTokens)
+        summarisedText = await summariseChunks(newChunks)
+      }
+
+      summarisedText = await summariseChunk(summarisedText, maxWordsNumber)
+      resp.json({ summarisedText })
 
     } catch (error) {
       console.error("An error occurred")
