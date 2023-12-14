@@ -39,7 +39,7 @@ function PdfSummary() {
             }
 
             setError("")
-            setResult(response.data.summarisedText)
+            setResult(response.data.summarizedText)
             setJresult(JSON.stringify(response.data, null, 2))
         } catch (error) {
             console.log(error)
