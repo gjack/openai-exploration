@@ -241,6 +241,42 @@ app.post("/api/pdfsummary", upload.single('pdf'), async function(req, resp) {
     }
 })
 
+// conversations in chat
+
+async function runChatCompletion(prompt) {
+  const response = await openai.chat.completions.create({
+    messages: [
+      { role: 'system', content: "You are a doctor"},
+      { role: 'user', content: prompt}
+    ],
+    model: 'gpt-3.5-turbo',
+    max_tokens: 50
+  })
+
+   return response
+}
+
+app.post("/api/chats", async function(req, resp) {
+  try {
+    const {text} = req.body
+
+    const completion = await runChatCompletion(text)
+    resp.json({ data: completion, ok: true })
+  } catch (error) {
+      if (error.response) {
+          console.error(error.response.status, error.response.data)
+          resp.status(error.response.status).json(error.response.data)
+      } else {
+          console.error("Error with OPENAI request:", error.message)
+          resp.status(500).json({
+              error: {
+                  message: "An error ocurred during the request"
+              }
+          })
+      }
+  }
+})
+
 const PORT = process.env.PORT
 
 app.listen(PORT, console.log(`Server started on port ${PORT}`))
