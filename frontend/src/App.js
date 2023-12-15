@@ -3,7 +3,7 @@ import Home from "./screens/Home";
 import "./styles/bootstrap-custom.scss"
 import Stream from "./screens/Stream";
 import PdfSummary from "./screens/PdfSummary/PdfSummary";
-import Chats from "./screens/Chats";
+import FunctionChats from "./screens/FunctionChats";
 
 
 function App(params) {
@@ -13,7 +13,7 @@ function App(params) {
           <Route path="/" Component={Home}></Route>
           <Route path="/stream" Component={Stream}></Route>
           <Route path="/pdfsummary" Component={PdfSummary}></Route>
-          <Route path="/chats" Component={Chats}></Route>
+          <Route path="/function_chats" Component={FunctionChats}></Route>
         </Routes>
       </Router>
     )

@@ -1,6 +1,7 @@
 const express = require("express")
 const dotenv = require("dotenv")
 const app = express()
+const axios = require("axios")
 
 // accept json data in requests
 app.use(express.json())
@@ -275,12 +276,103 @@ async function runChatCompletion(prompt) {
    return response
 }
 
-app.post("/api/chats", async function(req, resp) {
+async function chainedCompletion(prompt, functionArguments, weatherObject) {
+  const response = await openai.chat.completions.create({
+    messages: [
+      { "role": 'user', "content": prompt },
+      { 
+        "role": "assistant",
+        "content": null,
+        "function_call": {
+          "name": "get_current_weather",
+          "arguments": functionArguments
+        }
+      },
+      { 
+        "role": "function",
+        "name": "get_current_weather",
+        "content": JSON.stringify(weatherObject)
+      }
+    ],
+    functions: [
+      {
+        "name": "get_current_weather",
+        "description": "Get the current weather in a given location",
+        "parameters": {
+          "type": "object",
+          "properties": {
+            "location": {
+              "type": "string",
+              "description": "The city and state, e.g. San Francisco, CA"
+            },
+            "unit": {
+              "type": "string",
+              "enum": ["celsius", "fahrenheit"]
+            }
+          },
+          "required": ["location"]
+        }
+      }
+    ],
+    model: 'gpt-3.5-turbo',
+    max_tokens: 50
+  })
+
+   return response
+}
+
+async function getWeather(params) {
+  // this function makes calls to weatherapi to get the current weather
+  // https://www.weatherapi.com/docs/
+  // Account and api key are needed (free)
+  try {
+    const response = await axios.get(
+      "http://api.weatherapi.com/v1/current.json", 
+      { params: { q: params.location, key: process.env.WEATHER_API_KEY } }
+    )
+    const weather = response.data
+    const { condition, temp_f, temp_c } = weather.current
+    const unit = params.unit || "celsius" // default to Celsius if the user didn't specify a temperature in prompt
+    const temperature = unit === "celsius" ? temp_c : temp_f
+    return { temperature, unit, description: condition.text }
+  } catch (error) {
+    console.error(error)
+  }
+}
+
+app.post("/api/function_chats", async function(req, resp) {
   try {
     const {text} = req.body
-
+    
+    // request 1
     const completion = await runChatCompletion(text)
-    resp.json({ data: completion, ok: true })
+
+    // request 2
+    // the first call to chatgpt returns a function_call object
+    // that has information for the function we included and the arguments for it 
+    // extracted from the users prompt
+    const calledFunction = completion.choices[0].message.function_call
+
+    // by default if the prompt is not something that can be answered using one of our included functions
+    // chatgpt is smart enough to answer like a simple prompt
+    // in that case, function_call won't be included in the response for the completion
+    if(!calledFunction) {
+      resp.json({ data: completion, ok: true })
+      return
+    }
+
+    const { name: functionName, arguments: functionArguments } = calledFunction
+    const parsedArguments = JSON.parse(functionArguments)
+
+    if (functionName === "get_current_weather") {
+      // call the function to the API or local function
+      const weatherObject = await getWeather(parsedArguments)
+
+      // make new request to openai with the response from the call to weather api
+      const response = await chainedCompletion(text, functionArguments, weatherObject)
+      resp.json({ data: response, ok: true })
+    }
+
   } catch (error) {
       if (error.response) {
           console.error(error.response.status, error.response.data)

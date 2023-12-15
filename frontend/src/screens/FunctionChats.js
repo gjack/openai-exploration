@@ -1,7 +1,7 @@
 import React, {useState} from "react"
 import "./styles/style.css"
 
-function Chats() {
+function FunctionChats() {
     const [inputValue, setInputValue] = useState("")
     const [error, setError] = useState("")
     const [result, setResult] = useState("")
@@ -20,7 +20,7 @@ function Chats() {
         }
 
         try {
-            const response = await fetch("/api/chats", {
+            const response = await fetch("/api/function_chats", {
                 method: "POST",
                 headers: {
                     'Content-Type': 'application/json',
@@ -32,7 +32,7 @@ function Chats() {
                 const data = await response.json()
                 setPrompt(inputValue)
                 setResult(data.data.choices[0].message.content)
-                setJresult(JSON.stringify(data.data, null, 2))
+                setJresult(JSON.stringify(data, null, 2))
                 setInputValue("")
                 setError("")
             } else {
@@ -75,4 +75,4 @@ function Chats() {
     
 }
 
-export default Chats
+export default FunctionChats
