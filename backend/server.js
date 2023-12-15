@@ -246,8 +246,27 @@ app.post("/api/pdfsummary", upload.single('pdf'), async function(req, resp) {
 async function runChatCompletion(prompt) {
   const response = await openai.chat.completions.create({
     messages: [
-      { role: 'system', content: "You are a doctor"},
       { role: 'user', content: prompt}
+    ],
+    functions: [
+      {
+        "name": "get_current_weather",
+        "description": "Get the current weather in a given location",
+        "parameters": {
+          "type": "object",
+          "properties": {
+            "location": {
+              "type": "string",
+              "description": "The city and state, e.g. San Francisco, CA"
+            },
+            "unit": {
+              "type": "string",
+              "enum": ["celsius", "fahrenheit"]
+            }
+          },
+          "required": ["location"]
+        }
+      }
     ],
     model: 'gpt-3.5-turbo',
     max_tokens: 50

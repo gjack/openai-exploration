@@ -69,7 +69,7 @@ function Chats() {
         {error && <div className="alert alert-danger mt-3">{error}</div>}
         {prompt && <div className="alert alert-secondary mt-3">{prompt}</div>}
         {result && <div className="alert alert-success mt-3">{result}</div>}
-        {result && (<pre className="alert alert-info mt-3"><code>{jresult}</code></pre>)}
+        {jresult && (<pre className="alert alert-info mt-3"><code>{jresult}</code></pre>)}
     </div>
     )
     
