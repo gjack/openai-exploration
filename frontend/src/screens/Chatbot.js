@@ -11,6 +11,19 @@ function Chatbot() {
         { role: "system", content: "You are an assistant" }
     ])
 
+    const personalities = [
+        {
+            title: "Thomas Alva Edison",
+            description: "American inventor and businessman",
+            image: "edison.jpeg"
+        },
+        {
+            title: "Albert Einstein",
+            description: "German physicist and Nobel prize winner",
+            image: "einstein.jpeg"
+        }
+    ]
+
     const handleSubmit = async (event) => {
         event.preventDefault()
         // We'll send a request only if there is an input
@@ -36,6 +49,14 @@ function Chatbot() {
         }
     }
 
+const handleOptionSelect = (option) => {
+  setMessages([{
+    role: "system",
+    content: `I want you to act as ${option}`
+  }])
+  setSelectedOption(option)
+}
+
 useEffect(() => {
   const chatContainer = document.getElementById("chat_container")
   const scrollOptions = {
@@ -48,8 +69,23 @@ useEffect(() => {
     return (
     <div>
         <div className="d-flex flex-column chat-page">
-            <div id="personalities text-center">
+            <div id="personalities" className="text-center">
               <h3>{selectedOption ? "You are chatting with" : "Please, select a character"}</h3>
+              <div className="d-flex justify-content-evenly mr-10">
+                {personalities.map((personality, index) => (
+                    <div key={index} className="text-center">
+                      <img
+                        src={`images/${personality.image}`}
+                        alt={personality.title}
+                        className={`img-thumbnail rounded-circle ${selectedOption === personality.title ? 'selected' : ''}`}
+                        style={{ maxWidth: "150px" }}
+                        onClick={() => handleOptionSelect(personality.title)}
+                      />
+                      <h6>{personality.title}</h6>
+                      <p>{personality.description}</p>
+                    </div>
+                ))}
+              </div>
             </div>
             <div id="chat_container" className="flex-fill overflow-auto">
                 {messages.map((message, index) => message.role !== "system" && (
