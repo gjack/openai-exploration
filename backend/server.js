@@ -388,6 +388,32 @@ app.post("/api/function_chats", async function(req, resp) {
   }
 })
 
+// chatbot
+async function runLongChatCompletion(messages) {
+  const response = await openai.chat.completions.create({
+    messages: messages,
+    model: 'gpt-3.5-turbo',
+    max_tokens: 50
+  })
+   return response
+}
+
+app.post("/api/chatbot", async function(req, resp) {
+  try {
+    const {messages} = req.body
+
+    const completion = await runLongChatCompletion(messages)
+    resp.json({ data: completion, ok: true })
+  } catch (error) {
+    console.error("Error with OPENAI request:", error)
+    resp.status(500).json({
+        error: {
+            message: "An error ocurred during the request"
+        }
+    })
+  }
+})
+
 const PORT = process.env.PORT
 
 app.listen(PORT, console.log(`Server started on port ${PORT}`))
