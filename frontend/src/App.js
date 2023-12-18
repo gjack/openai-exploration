@@ -5,6 +5,7 @@ import Stream from "./screens/Stream";
 import PdfSummary from "./screens/PdfSummary/PdfSummary";
 import FunctionChats from "./screens/FunctionChats";
 import Chatbot from "./screens/Chatbot";
+import Similarities from "./screens/Similarities";
 
 
 function App(params) {
@@ -16,6 +17,7 @@ function App(params) {
           <Route path="/pdfsummary" Component={PdfSummary}></Route>
           <Route path="/function_chats" Component={FunctionChats}></Route>
           <Route path="/chatbot" Component={Chatbot}></Route>
+          <Route path="/similarities" Component={Similarities}></Route>
         </Routes>
       </Router>
     )

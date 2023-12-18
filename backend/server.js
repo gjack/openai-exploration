@@ -414,6 +414,57 @@ app.post("/api/chatbot", async function(req, resp) {
   }
 })
 
+// embeddings (similarities)
+
+const { Matrix } = require("ml-matrix")
+
+const getEmbedding = async (text, model = "text-embedding-ada-002") => {
+  // cleanup newlines. Replace with simple space
+  const cleanedText = text.replace(/\n/g, ' ')
+  const response = await openai.embeddings.create({
+    model,
+    input: cleanedText
+  })
+
+  return response.data[0].embedding
+}
+
+const cosineSimilarity = (vector1, vector2) => {
+  // The recommendation to calculate similarities between embeddings is to use cosine similarity as defined here
+  // https://en.wikipedia.org/wiki/Cosine_similarity
+  // However, according to the documentation in openAI, it is possible to calculate them
+  // using only the dot product because their embeddings are normalized to base 1
+  // and cosine similarity and Euclidean distance will result in the identical rankings
+  // https://platform.openai.com/docs/guides/embeddings/limitations-risks
+
+  return  Matrix.rowVector(vector1).dot(Matrix.rowVector(vector2))
+}
+
+app.post("/api/similarities", async function(req, resp) {
+  try {
+    const {text1, text2} = req.body
+
+    // get embeddings
+    const embedding1 = await getEmbedding(text1)
+    const embedding2 = await getEmbedding(text2)
+    const similarity = cosineSimilarity(embedding1, embedding2)
+
+    resp.json({ similarity, embedding1, embedding2 })
+  } catch (error) {
+      if (error.response) {
+          console.error(error.response.status, error.response.data)
+          resp.status(error.response.status).json(error.response.data)
+      } else {
+          console.error("Error with OPENAI request:", error.message)
+          resp.status(500).json({
+              error: {
+                  message: "An error ocurred during the request"
+              }
+          })
+      }
+  }
+})
+
 const PORT = process.env.PORT
 
 app.listen(PORT, console.log(`Server started on port ${PORT}`))
